@@ -152,13 +152,17 @@ class PostgresConnector(DadsConnector):
         where_sql, params = self.build_where_text(filters)
         stats = self.get_statistics(where_sql, params)
 
+        # A system has one rational preperiodic record per field, so the joins
+        # can repeat it. DISTINCT keeps one row per system; filters on r/g
+        # still match when any of the system's records matches.
         query = sql.SQL("""
-            SELECT f.function_id, f.sigma_one, f.sigma_two, f.ordinal, f.degree,
-                   (f.original_model).coeffs, f.base_field_label
+            SELECT DISTINCT f.function_id, f.sigma_one, f.sigma_two, f.ordinal,
+                   f.degree, (f.original_model).coeffs, f.base_field_label
             FROM functions_dim_1_nf f
             JOIN rational_preperiodic_dim_1_nf r ON f.function_id = r.function_id
             JOIN graphs_dim_1_nf g ON g.graph_id = r.graph_id
             {}
+            ORDER BY f.function_id
         """).format(where_sql)
 
         rows = self.try_query(query, params, fetch='all')
@@ -189,7 +193,7 @@ class PostgresConnector(DadsConnector):
 
     def get_statistics(self, where_sql, params):
         query = sql.SQL("""
-            SELECT count(*)
+            SELECT count(DISTINCT f.function_id)
             FROM functions_dim_1_nf f
             JOIN rational_preperiodic_dim_1_nf r ON f.function_id = r.function_id
             JOIN graphs_dim_1_nf g ON g.graph_id = r.graph_id

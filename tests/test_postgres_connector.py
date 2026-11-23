@@ -180,3 +180,60 @@ def test_build_where_text_empty(
     where_sql, params = connector.build_where_text({})
     assert where_sql == sql.SQL("")
     assert params == []
+
+
+def _executed_sql(mock_cur, mock_conn):
+    return " ".join(
+        mock_cur.execute.call_args_list[-1][0][0].as_string(mock_conn).split()
+    )
+
+
+@patch("dads.connectors.postgres.load_config", return_value=COMMON_MOCK_CONFIG)
+@patch("psycopg2.connect")
+def test_get_filtered_systems_returns_each_system_once(
+    mock_connect, mock_config
+):  # pylint: disable=unused-argument
+    """A system with rational point records over several fields is listed once (#366)."""
+    mock_conn = mock_connect.return_value
+    mock_conn.encoding = "UTF8"
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+    mock_cur.fetchall.return_value = [
+        (1, "0", "0", 1, 2, [[1, 0, 0], [0, 0, 1]], "1.0.1.1"),
+    ]
+    mock_cur.description = [
+        ("function_id",), ("sigma_one",), ("sigma_two",), ("ordinal",),
+        ("degree",), ("coeffs",), ("base_field_label",),
+    ]
+
+    connector = PostgresConnector()
+    connector.connection = mock_conn
+    with patch.object(connector, "get_statistics", return_value=1):
+        rows, stats = connector.get_filtered_systems({})
+
+    search_sql = _executed_sql(mock_cur, mock_conn)
+    assert search_sql.startswith("SELECT DISTINCT f.function_id")
+    assert "ORDER BY f.function_id" in search_sql
+    assert [row[-1] for row in rows] == [1]
+    assert stats == 1
+
+
+@patch("dads.connectors.postgres.load_config", return_value=COMMON_MOCK_CONFIG)
+@patch("psycopg2.connect")
+def test_get_statistics_counts_distinct_systems(
+    mock_connect, mock_config
+):  # pylint: disable=unused-argument
+    """The count matches the number of systems, not joined point records (#366)."""
+    mock_conn = mock_connect.return_value
+    mock_conn.encoding = "UTF8"
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+    mock_cur.fetchone.return_value = (11,)
+    mock_cur.description = [("count",)]
+
+    connector = PostgresConnector()
+    connector.connection = mock_conn
+    result = connector.get_statistics(sql.SQL(""), [])
+
+    assert "count(DISTINCT f.function_id)" in _executed_sql(mock_cur, mock_conn)
+    assert result == 11

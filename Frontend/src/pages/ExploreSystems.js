@@ -33,6 +33,9 @@ import HelpBox from '../components/FunctionDetail/HelpBox';
 
 const PAGE_SIZE_OPTIONS = ['10', '20', '50', '100', 'All'];
 
+// Shown in the statistics panel for values the backend does not compute yet.
+const NOT_AVAILABLE = '–';
+
 // Fetches systems for the given filters. Resolves to the data the page needs,
 // or null on error. Lives outside the component so effects don't depend on it.
 async function fetchFilteredSystems(filters) {
@@ -64,24 +67,27 @@ async function fetchFilteredSystems(filters) {
                 journal_label: filters.journal_label
             }
         );
+        // The backend returns only the number of matching systems. The other
+        // statistics are not computed yet, so they show a dash instead of NaN.
         const statistics = result.data['statistics'];
+        const numMaps = Array.isArray(statistics) ? statistics[0] : statistics;
         return {
             results: result.data['results'],
             appliedFilters: { ...filters },
             stats: {
-                numMaps: statistics[0],
-                avgAUT: Math.round(statistics[1] * 100) / 100,
-                numPCF: statistics[2],
-                avgHeight: Math.round(statistics[3] * 100) / 100,
-                avgResultant: Math.round(statistics[4] * 100) / 100,
-                avgPCSet: Math.round(statistics[5] * 100) / 100,
-                largestPCSet: statistics[6],
-                avgNumPeriodic: Math.round(statistics[7] * 100) / 100,
-                mostPeriodic: statistics[8],
-                largestPeriodicCycle: statistics[9],
-                avgNumPrePeriodic: Math.round(statistics[10] * 100) / 100,
-                mostPreperiodic: statistics[11],
-                largestComp: statistics[12]
+                numMaps: numMaps ?? NOT_AVAILABLE,
+                avgAUT: NOT_AVAILABLE,
+                numPCF: NOT_AVAILABLE,
+                avgHeight: NOT_AVAILABLE,
+                avgResultant: NOT_AVAILABLE,
+                avgPCSet: NOT_AVAILABLE,
+                largestPCSet: NOT_AVAILABLE,
+                avgNumPeriodic: NOT_AVAILABLE,
+                mostPeriodic: NOT_AVAILABLE,
+                largestPeriodicCycle: NOT_AVAILABLE,
+                avgNumPrePeriodic: NOT_AVAILABLE,
+                mostPreperiodic: NOT_AVAILABLE,
+                largestComp: NOT_AVAILABLE
             }
         };
     } catch (error) {
