@@ -28,11 +28,8 @@ import Button from 'react-bootstrap/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import HelpBox from '../components/FunctionDetail/HelpBox';
-<<<<<<< Updated upstream
 import ExternalLink from '../components/ExternalLink';
-=======
 import { modelCsvFields } from '../utils/format';
->>>>>>> Stashed changes
 
 
 
