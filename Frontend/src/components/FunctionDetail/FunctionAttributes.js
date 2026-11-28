@@ -14,40 +14,6 @@ export default function FunctionAttributes({ data }) {
     <sup style={{ fontSize: '0.6em', verticalAlign: 'super' }}>{children}</sup>
   );
 
-  const processInput = (input) => {
-    const polynomialPart = input.match(/{{.*?}}/);
-    if (!polynomialPart) return [];
-
-    const polynomials = polynomialPart[0].slice(2, -2).split('},{');
-    const result = [];
-
-    for (let poly of polynomials) {
-      const coeffs = poly.split(',');
-      let polynomialExpression = '';
-      for (let i = 0; i < coeffs.length; i++) {
-        const coefficient = coeffs[i];
-        if (coefficient !== '0') {
-          let monomial = '';
-          if (i === 0) monomial = 'x^' + (coeffs.length - 1);
-          else if (i === coeffs.length - 1) monomial = 'y^' + (coeffs.length - 1);
-          else if (i === 1 && (coeffs.length - 1) === 1) monomial = 'xy';
-          else if (i === 1) monomial = 'x^' + (coeffs.length - 1 - i) + 'y';
-          else if ((coeffs.length - 1 - i) === 1) monomial = 'x' + 'y^' + i;
-          else monomial = 'x^' + (coeffs.length - 1 - i) + 'y^' + i;
-
-          if (coefficient === '1') polynomialExpression += monomial;
-          else if (coefficient === '-1') polynomialExpression += '-' + monomial;
-          else polynomialExpression += coefficient + monomial;
-
-          if (i !== coeffs.length - 1) polynomialExpression += '+';
-        }
-      }
-      result.push(polynomialExpression);
-    }
-
-    return result;
-  };
-
   // Recommend separating renderExponent into a utility file if they are used in multiple places, to avoid code duplication.
   const renderExponent = (expressionArray) => {
     return expressionArray.map((expression, index) => (

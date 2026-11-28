@@ -28,7 +28,11 @@ import Button from 'react-bootstrap/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import HelpBox from '../components/FunctionDetail/HelpBox';
+<<<<<<< Updated upstream
 import ExternalLink from '../components/ExternalLink';
+=======
+import { modelCsvFields } from '../utils/format';
+>>>>>>> Stashed changes
 
 
 
@@ -269,6 +273,9 @@ function ExploreSystems() {
         el.classList.toggle("caret-down");
     };
 
+    // One model as five quoted CSV cells; the columns and text match the old string export
+    const modelCsvCells = (model) => modelCsvFields(model).map(value => `"${value}",`).join('');
+
     const createCSV = (csvSystems, fileName) => {
         try {
             if (csvSystems.length == 0) {
@@ -297,23 +304,11 @@ function ExploreSystems() {
                     csvData += "\"" + String(csvSystems[i].is_newton).replace(/"/g, '') + "\"" + ","
                     csvData += "\"" + String(csvSystems[i].is_pcf).replace(/"/g, '') + "\"" + ","
                     csvData += "\"" + String(csvSystems[i].is_polynomial).replace(/"/g, '') + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].monic_centered, 0).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].monic_centered, 1).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].monic_centered, 2).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].monic_centered, 3).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].monic_centered, 4).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
+                    csvData += modelCsvCells(csvSystems[i].monic_centered);
                     csvData += "\"" + String(csvSystems[i].ordinal).replace(/"/g, '') + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].original_model, 0).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].original_model, 1).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].original_model, 2).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].original_model, 3).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].original_model, 4).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
+                    csvData += modelCsvCells(csvSystems[i].original_model);
                     csvData += "\"" + String(csvSystems[i].rational_twists).replace(/"/g, '') + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].reduced_model, 0).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].reduced_model, 1).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].reduced_model, 2).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].reduced_model, 3).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
-                    csvData += "\"" + getEntryFromModelString(csvSystems[i].reduced_model, 4).replace(/"/g, '').replace(/{/g, "[").replace(/}/g, "]") + "\"" + ","
+                    csvData += modelCsvCells(csvSystems[i].reduced_model);
                     csvData += "\"" + String(csvSystems[i].sigma_one).replace(/"/g, '') + "\"" + ","
                     csvData += "\"" + String(csvSystems[i].sigma_two).replace(/"/g, '') + "\"" + ","
                     csvData += "\n";
@@ -360,24 +355,6 @@ function ExploreSystems() {
             return [];
         }
     };
-
-    function getEntryFromModelString(modelString, index) {
-        if (!modelString) {
-            return "N/A";
-        }
-
-        modelString = modelString.slice(1, -1);
-
-        // Using ugly regex, we will split the model string into an array by separating
-        // by commas not inside quotes
-        var parsedData = modelString.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
-
-        if (index >= 0 && index < parsedData.length && parsedData[index] != "") {
-            return parsedData[index];
-        } else {
-            return "N/A";
-        }
-    }
 
     // True Constants
     const defaultFilters = {
